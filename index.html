@@ -22,7 +22,6 @@
         }
         h1 { text-align: center; color: var(--primary-color); margin-bottom: 20px; font-size: 24px; }
         
-        /* 會議室分頁切換 Tabs Style */
         .room-tabs {
             display: flex; gap: 10px; margin-bottom: 20px;
             border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;
@@ -43,20 +42,21 @@
         .control-row input { padding: 8px 12px; font-size: 16px; border: 1px solid #cbd5e0; border-radius: 6px; flex-grow: 1; }
         
         .time-grid { display: flex; flex-direction: column; gap: 12px; }
-        .time-row { display: flex; align-items: center; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; background: #fff; }
-        .time-label { width: 110px; font-weight: bold; font-size: 15px; }
-        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; color: white; margin-right: 12px; width: 60px; text-align: center; }
+        .time-row { display: flex; align-items: center; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
+        .time-label { width: 130px; font-weight: bold; font-size: 15px; color: #4a5568; }
+        .status-badge { padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; color: white; margin-right: 15px; width: 65px; text-align: center; }
         .status-available { background-color: var(--available-color); }
         .status-booked { background-color: var(--booked-color); }
         .info-text { flex-grow: 1; font-size: 14px; }
         
-        .action-btn { padding: 8px 14px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .action-btn { padding: 8px 16px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
         .btn-reserve { background-color: var(--primary-color); color: white; }
-        .btn-cancel { background-color: #edf2f7; color: #4a5568; font-size: 13px; }
+        .btn-reserve:hover { background-color: #1e4e80; }
+        .btn-cancel { background-color: #fed7d7; color: #9b2c2c; font-size: 13px; }
+        .btn-cancel:hover { background-color: #feb2b2; }
 
-        /* 彈出視窗 */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: white; padding: 25px; border-radius: 8px; width: 90%; max-width: 400px; }
+        .modal-content { background: white; padding: 25px; border-radius: 8px; width: 90%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; }
         .form-group input { width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 6px; box-sizing: border-box; }
@@ -68,10 +68,9 @@
 <div class="container">
     <h1>🏢 辦公室會議室預約系統</h1>
     
-    <!-- 分頁切換鈕 -->
     <div class="room-tabs">
-        <button class="tab-btn active" onclick="switchRoom('R1-2013')">📍 R1-2013 會議室</button>
-        <button class="tab-btn" onclick="switchRoom('R1-3013')">📍 R1-3013 會議室</button>
+        <button class="tab-btn active" id="btn-R1-2013" onclick="switchRoom('R1-2013')">📍 R1-2013 會議室</button>
+        <button class="tab-btn" id="btn-R1-3013" onclick="switchRoom('R1-3013')">📍 R1-3013 會議室</button>
     </div>
     
     <div class="control-panel">
@@ -82,11 +81,10 @@
     </div>
 
     <div class="time-grid" id="time-grid">
-        <!-- 由 JavaScript 自動生成 -->
+        <!-- 修正後：時段列表將在頁面載入時自動呈現 -->
     </div>
 </div>
 
-<!-- 預約彈出視窗 -->
 <div class="modal" id="booking-modal">
     <div class="modal-content">
         <h3 style="margin-top:0; color:var(--primary-color)">登記會議室預約</h3>
@@ -105,7 +103,6 @@
     const START_HOUR = 7;
     const END_HOUR = 18;
     
-    // 初始化雲端中端資料存儲（兩間會議室獨立開來）
     let db = JSON.parse(localStorage.getItem('office_rooms_data_v2')) || { "R1-2013": {}, "R1-3013": {} };
     if(!db["R1-2013"]) db["R1-2013"] = {};
     if(!db["R1-3013"]) db["R1-3013"] = {};
@@ -115,31 +112,29 @@
     const dateInput = document.getElementById('booking-date');
     const timeGrid = document.getElementById('time-grid');
 
-    // 設定預設日期為今天
-    const today = new Date().toISOString().split('T')[0];
-    dateInput.value = today;
-    dateInput.min = today; 
+    // 💡 修正核心：確保時區轉換正確，並完整將「年-月-日」格式寫入欄位
+    const now = new Date();
+    const tzOffset = now.getTimezoneOffset() * 60000;
+    const localISOTime = (new Date(now - tzOffset)).toISOString().split('T')[0];
+    
+    dateInput.value = localISOTime;
+    dateInput.min = localISOTime; 
 
+    // 綁定日期切換事件
     dateInput.addEventListener('change', renderTimeSlots);
 
-    // 切換會議室分頁
     function switchRoom(roomName) {
         currentRoom = roomName;
-        const buttons = document.querySelectorAll('.tab-btn');
-        buttons.forEach(btn => {
-            if(btn.textContent.includes(roomName)) btn.classList.add('active');
-            else btn.classList.remove('active');
-        });
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(`btn-${roomName}`).classList.add('active');
         renderTimeSlots();
     }
 
-    // 渲染時間格子
     function renderTimeSlots() {
         const selectedDate = dateInput.value;
         if (!selectedDate) return;
 
         timeGrid.innerHTML = '';
-        // 抓取當前選擇會議室、當前日期的資料
         const roomData = db[currentRoom] || {};
         const dayData = roomData[selectedDate] || {};
 
@@ -166,7 +161,7 @@
 
                 const info = document.createElement('div');
                 info.className = 'info-text';
-                info.innerHTML = `<strong>預約人：</strong>${isBooked.name} &nbsp;&nbsp;|&nbsp;&nbsp; <strong>分機：</strong>${isBooked.ext}`;
+                info.innerHTML = `<strong>${isBooked.name}</strong> (分機: ${isBooked.ext})`;
                 row.appendChild(info);
 
                 const cancelBtn = document.createElement('button');
@@ -183,7 +178,7 @@
                 const info = document.createElement('div');
                 info.className = 'info-text';
                 info.style.color = '#a0aec0';
-                info.textContent = '點擊右側登記';
+                info.textContent = '可預約';
                 row.appendChild(info);
 
                 const bookBtn = document.createElement('button');
@@ -214,12 +209,6 @@
         const timeKey = `${String(currentSelectedHour).padStart(2, '0')}:00`;
 
         if (!name || !ext) { alert('請填寫姓名與分機！'); return; }
-
         if (!db[currentRoom][selectedDate]) db[currentRoom][selectedDate] = {};
         
-        // 防撞重複檢查
-        if (db[currentRoom][selectedDate][timeKey]) {
-            alert('該時段已被搶先預約！');
-            closeModal(); renderTimeSlots(); return;
-        }
 
