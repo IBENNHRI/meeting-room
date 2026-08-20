@@ -105,7 +105,6 @@
         <!-- 由 JavaScript 自動動態生成 -->
     </div>
 </div>
-
 <!-- 預約登錄與詳情彈出視窗 -->
 <div class="modal" id="booking-modal">
     <div class="modal-content">
@@ -225,3 +224,102 @@
             // 排序時段
             const sortedHours = Object.keys(dayData).sort();
             sortedHours.forEach(timeKey => {
+
+const item = dayData[timeKey];
+const eventItem = document.createElement('div');
+eventItem.className = 'event-item';
+eventItem.textContent = ${timeKey} ${item.name};
+eventItem.title = ${timeKey} 預約人:${item.name} (分機:${item.ext});
+eventListDiv.appendChild(eventItem);
+});
+cell.appendChild(eventListDiv);
+// 點擊格子開啟單日詳細預約/狀況視窗
+cell.onclick = () => openBookingModal(dateStr);
+grid.appendChild(cell);
+}
+}
+// 開啟特定日期的詳細管理彈窗
+function openBookingModal(dateStr) {
+activeSelectedDateStr = dateStr;
+document.getElementById('modal-room-display').value = currentRoom;
+document.getElementById('modal-date-display').value = dateStr;
+// 刷新列表與下拉選單
+refreshModalData();
+document.getElementById('user-name').value = '';
+document.getElementById('user-ext').value = '';
+document.getElementById('booking-modal').style.display = 'flex';
+}
+// 重新整理彈出視窗內的預約資訊
+function refreshModalData() {
+const bookedListContainer = document.getElementById('modal-booked-list');
+const hourSelect = document.getElementById('booking-hour');
+bookedListContainer.innerHTML = '';
+hourSelect.innerHTML = '';
+const dayData = (db[currentRoom] && db[currentRoom][activeSelectedDateStr]) || {};
+const bookedTimes = Object.keys(dayData);
+// 1. 顯示已預約清單
+if (bookedTimes.length === 0) {
+bookedListContainer.innerHTML = '本日目前尚無任何預約。';
+} else {
+bookedTimes.sort().forEach(timeKey => {
+const info = dayData[timeKey];
+const div = document.createElement('div');
+div.style.cssText = "display:flex; justify-content:space-between; align-items:center; background:white; padding:4px 8px; border-radius:4px; border:1px solid #fee2e2;";
+div.innerHTML = <span><strong>${timeKey}</strong> - ${info.name} (分機:${info.ext})</span> <button onclick="deleteBooking('${timeKey}')" style="background:#e53e3e; color:white; border:none; padding:2px 6px; border-radius:4px; cursor:pointer; font-size:11px;">釋放</button>;
+bookedListContainer.appendChild(div);
+});
+}
+// 2. 產生尚未被預約的下拉選項 (上午7點到下午6點)
+let availableCount = 0;
+for (let hour = START_HOUR; hour < END_HOUR; hour++) {
+const timeKey = ${String(hour).padStart(2, '0')}:00;
+const nextHour = hour + 1;
+const timeString = ${timeKey} - ${String(nextHour).padStart(2, '0')}:00;
+if (!dayData[timeKey]) {
+const opt = document.createElement('option');
+opt.value = timeKey;
+opt.textContent = timeString;
+hourSelect.appendChild(opt);
+availableCount++;
+}
+}
+if(availableCount === 0) {
+hourSelect.innerHTML = '(本日已無空閒時段)';
+}
+}
+function closeModal() { document.getElementById('booking-modal').style.display = 'none'; }
+// 提交新預約
+function submitBooking() {
+const timeKey = document.getElementById('booking-hour').value;
+const name = document.getElementById('user-name').value.trim();
+const ext = document.getElementById('user-ext').value.trim();
+if (!timeKey) { alert('無可用時段或未選擇時段！'); return; }
+if (!name || !ext) { alert('請完整填寫姓名與分機！'); return; }
+if (!db[currentRoom][activeSelectedDateStr]) db[currentRoom][activeSelectedDateStr] = {};
+// 防撞重複檢查
+if (db[currentRoom][activeSelectedDateStr][timeKey]) {
+alert('真不巧，該時段剛剛已被搶先登記！');
+refreshModalData(); renderCalendar(); return;
+}
+// 寫入
+db[currentRoom][activeSelectedDateStr][timeKey] = { name: name, ext: ext };
+localStorage.setItem('office_rooms_calendar_v3', JSON.stringify(db));
+alert('預約登記成功！');
+refreshModalData();
+renderCalendar();
+}
+// 刪除/釋放預約
+function deleteBooking(timeKey) {
+if (confirm(確定要釋放 ${activeSelectedDateStr} ${timeKey} 的會議室預約嗎？)) {
+if (db[currentRoom] && db[currentRoom][activeSelectedDateStr] && db[currentRoom][activeSelectedDateStr][timeKey]) {
+delete db[currentRoom][activeSelectedDateStr][timeKey];
+localStorage.setItem('office_rooms_calendar_v3', JSON.stringify(db));
+refreshModalData();
+renderCalendar();
+}
+}
+}
+// 初始化網頁渲染
+renderCalendar();
+
+
