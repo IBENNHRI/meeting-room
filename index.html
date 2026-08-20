@@ -96,13 +96,13 @@
     <!-- 月曆控制列 -->
     <div class="calendar-header">
         <button class="nav-btn" onclick="moveMonth(-1)">◀ 上個月</button>
-        <h2 id="calendar-month-year">2026 年 08 月</h2>
+        <h2 id="calendar-month-year">年 月</h2>
         <button class="nav-btn" onclick="moveMonth(1)">下個月 ▶</button>
     </div>
 
     <!-- 月曆網格 -->
     <div class="calendar-grid" id="calendar-grid">
-        <!-- 由 JavaScript 自動動態生成 -->
+        <!-- 由 JavaScript 動態生成 -->
     </div>
 </div>
 <!-- 預約登錄與詳情彈出視窗 -->
@@ -126,7 +126,7 @@
         <div class="form-group">
             <label for="booking-hour">選擇欲登記時段</label>
             <select id="booking-hour">
-                <!-- 由 JS 動態過濾產生未預約的時段 -->
+                <!-- 由 JS 動態產生 -->
             </select>
         </div>
         <div class="form-group"><label for="user-name">預約人姓名 <span style="color:red;">*</span></label><input type="text" id="user-name" placeholder="請輸入姓名"></div>
@@ -143,12 +143,14 @@
     const START_HOUR = 7;
     const END_HOUR = 18;
     
-    // 初始化雲端中端資料
+    // 初始化資料儲存
     let db = JSON.parse(localStorage.getItem('office_rooms_calendar_v3')) || { "R1-2013": {}, "R1-3013": {} };
+    if(!db["R1-2013"]) db["R1-2013"] = {};
+    if(!db["R1-3013"]) db["R1-3013"] = {};
     
     let currentRoom = "R1-2013";
-    let currentDate = new Date(); // 當前月曆翻到的日期
-    let activeSelectedDateStr = ""; // 當前點開視窗的日期字串 (YYYY-MM-DD)
+    let currentDate = new Date(); 
+    let activeSelectedDateStr = ""; 
 
     // 切換會議室分頁
     function switchRoom(roomName) {
@@ -197,8 +199,10 @@
             grid.appendChild(emptyCell);
         }
 
-        // 今天日期字串比較用
-        const todayStr = new Date().toISOString().split('T')[0];
+        // 💡 修正後：用本地時區取得今天的日期字串進行比對
+        const now = new Date();
+        const tzOffset = now.getTimezoneOffset() * 60000;
+        const todayStr = (new Date(now - tzOffset)).toISOString().split('T')[0];
 
         // 開始畫每一天的格子
         for (let day = 1; day <= totalDays; day++) {
@@ -218,13 +222,12 @@
             const eventListDiv = document.createElement('div');
             eventListDiv.className = 'event-list';
 
-            // 撈取當天該會議室有無預約
-            const dayData = (db[currentRoom] && db[currentRoom][dateStr]) || {};
-            
-            // 排序時段
-            const sortedHours = Object.keys(dayData).sort();
-            sortedHours.forEach(timeKey => {
+            const roomData = db[currentRoom] || {};
+            const dayData = roomData[dateStr] || {};
 
+// 排序時段並呈現在月曆格中
+const sortedHours = Object.keys(dayData).sort();
+sortedHours.forEach(timeKey => {
 const item = dayData[timeKey];
 const eventItem = document.createElement('div');
 eventItem.className = 'event-item';
@@ -243,7 +246,6 @@ function openBookingModal(dateStr) {
 activeSelectedDateStr = dateStr;
 document.getElementById('modal-room-display').value = currentRoom;
 document.getElementById('modal-date-display').value = dateStr;
-// 刷新列表與下拉選單
 refreshModalData();
 document.getElementById('user-name').value = '';
 document.getElementById('user-ext').value = '';
@@ -255,7 +257,8 @@ const bookedListContainer = document.getElementById('modal-booked-list');
 const hourSelect = document.getElementById('booking-hour');
 bookedListContainer.innerHTML = '';
 hourSelect.innerHTML = '';
-const dayData = (db[currentRoom] && db[currentRoom][activeSelectedDateStr]) || {};
+const roomData = db[currentRoom] || {};
+const dayData = roomData[activeSelectedDateStr] || {};
 const bookedTimes = Object.keys(dayData);
 // 1. 顯示已預約清單
 if (bookedTimes.length === 0) {
@@ -301,7 +304,6 @@ if (db[currentRoom][activeSelectedDateStr][timeKey]) {
 alert('真不巧，該時段剛剛已被搶先登記！');
 refreshModalData(); renderCalendar(); return;
 }
-// 寫入
 db[currentRoom][activeSelectedDateStr][timeKey] = { name: name, ext: ext };
 localStorage.setItem('office_rooms_calendar_v3', JSON.stringify(db));
 alert('預約登記成功！');
@@ -310,6 +312,7 @@ renderCalendar();
 }
 // 刪除/釋放預約
 function deleteBooking(timeKey) {
+event.stopPropagation(); // 防止觸發到外層格子點擊事件
 if (confirm(確定要釋放 ${activeSelectedDateStr} ${timeKey} 的會議室預約嗎？)) {
 if (db[currentRoom] && db[currentRoom][activeSelectedDateStr] && db[currentRoom][activeSelectedDateStr][timeKey]) {
 delete db[currentRoom][activeSelectedDateStr][timeKey];
@@ -321,5 +324,4 @@ renderCalendar();
 }
 // 初始化網頁渲染
 renderCalendar();
-
 
