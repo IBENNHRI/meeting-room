@@ -1,3274 +1,1828 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-
-<head>
-
-<meta charset="UTF-8">
-
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0">
-
-<title>
-醫奈所會議室預約系統
-</title>
-
-
-<style>
-
-:root {
-
-    --primary-color: #2b6cb0;
-
-    --primary-dark: #1f4f85;
-
-    --booked-bg: #fff5f5;
-
-    --booked-text: #e53e3e;
-
-    --success: #38a169;
-
-    --bg-color: #f7fafc;
-
-}
-
-
-* {
-    box-sizing: border-box;
-}
-
-
-body {
-
-    font-family:
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        Roboto,
-        Arial,
-        sans-serif;
-
-    background:
-        var(--bg-color);
-
-    margin: 0;
-
-    padding: 15px;
-
-    color: #2d3748;
-
-}
-
-
-.container {
-
-    max-width: 1000px;
-
-    margin: 0 auto;
-
-    background: white;
-
-    padding: 20px;
-
-    border-radius: 12px;
-
-    box-shadow:
-        0 4px 6px rgba(0,0,0,0.05);
-
-}
-
-
-h1 {
-
-    text-align: center;
-
-    color:
-        var(--primary-color);
-
-    margin:
-        0 0 20px;
-
-    font-size: 24px;
-
-}
-
-
-/* ==========================================
-   會議室
-========================================== */
-
-.room-tabs {
-
-    display: flex;
-
-    gap: 10px;
-
-    margin-bottom: 20px;
-
-    border-bottom:
-        2px solid #e2e8f0;
-
-    padding-bottom: 10px;
-
-}
-
-
-.tab-btn {
-
-    flex: 1;
-
-    padding: 12px;
-
-    font-size: 16px;
-
-    font-weight: bold;
-
-    border:
-        1px solid #cbd5e0;
-
-    border-radius:
-        8px 8px 0 0;
-
-    background: #edf2f7;
-
-    color: #4a5568;
-
-    cursor: pointer;
-
-    transition: 0.2s;
-
-}
-
-
-.tab-btn:hover {
-
-    background: #e2e8f0;
-
-}
-
-
-.tab-btn.active {
-
-    background:
-        var(--primary-color);
-
-    color: white;
-
-    border-color:
-        var(--primary-color);
-
-}
-
-
-/* ==========================================
-   我的預約
-========================================== */
-
-.my-booking-area {
-
-    display: flex;
-
-    justify-content: flex-end;
-
-    margin-bottom: 15px;
-
-}
-
-
-.my-booking-btn {
-
-    border: none;
-
-    background:
-        #805ad5;
-
-    color: white;
-
-    padding: 9px 14px;
-
-    border-radius: 6px;
-
-    cursor: pointer;
-
-    font-weight: bold;
-
-}
-
-
-.my-booking-btn:hover {
-
-    background:
-        #6b46c1;
-
-}
-
-
-/* ==========================================
-   月曆控制
-========================================== */
-
-.calendar-header {
-
-    display: flex;
-
-    justify-content: space-between;
-
-    align-items: center;
-
-    margin-bottom: 15px;
-
-    background: #f8fafc;
-
-    padding: 12px;
-
-    border-radius: 8px;
-
-    border:
-        1px solid #e2e8f0;
-
-}
-
-
-.calendar-header h2 {
-
-    margin: 0;
-
-    font-size: 18px;
-
-    color: #4a5568;
-
-}
-
-
-.nav-btn {
-
-    background: white;
-
-    border:
-        1px solid #cbd5e0;
-
-    padding: 7px 12px;
-
-    border-radius: 6px;
-
-    cursor: pointer;
-
-    font-weight: bold;
-
-}
-
-
-.nav-btn:hover {
-
-    background: #edf2f7;
-
-}
-
-
-/* ==========================================
-   月曆
-========================================== */
-
-.calendar-grid {
-
-    display: grid;
-
-    grid-template-columns:
-        repeat(7, 1fr);
-
-    gap: 8px;
-
-}
-
-
-.weekday-label {
-
-    text-align: center;
-
-    font-weight: bold;
-
-    padding: 8px 0;
-
-    background: #edf2f7;
-
-    color: #718096;
-
-    border-radius: 4px;
-
-    font-size: 14px;
-
-}
-
-
-.calendar-day {
-
-    min-height: 110px;
-
-    border:
-        1px solid #e2e8f0;
-
-    border-radius: 6px;
-
-    padding: 6px;
-
-    background: white;
-
-    display: flex;
-
-    flex-direction: column;
-
-    cursor: pointer;
-
-    transition: 0.1s;
-
-}
-
-
-.calendar-day:hover {
-
-    background:
-        #f7fafc;
-
-    border-color:
-        #cbd5e0;
-
-}
-
-
-.calendar-day.empty {
-
-    background:
-        #fafafa;
-
-    cursor: default;
-
-    border: none;
-
-}
-
-
-.calendar-day.today {
-
-    border:
-        2px solid
-        var(--primary-color);
-
-    background:
-        #f0f7ff;
-
-}
-
-
-.day-number {
-
-    font-weight: bold;
-
-    font-size: 14px;
-
-    margin-bottom: 5px;
-
-    color: #4a5568;
-
-}
-
-
-.event-list {
-
-    flex-grow: 1;
-
-    display: flex;
-
-    flex-direction: column;
-
-    gap: 3px;
-
-    overflow-y: auto;
-
-    max-height: 80px;
-
-}
-
-
-.event-item {
-
-    font-size: 11px;
-
-    padding: 3px 5px;
-
-    border-radius: 3px;
-
-    background:
-        var(--booked-bg);
-
-    color:
-        var(--booked-text);
-
-    border-left:
-        3px solid
-        var(--booked-text);
-
-    white-space: nowrap;
-
-    overflow: hidden;
-
-    text-overflow: ellipsis;
-
-}
-
-
-/* ==========================================
-   Loading
-========================================== */
-
-.loading {
-
-    text-align: center;
-
-    padding: 30px;
-
-    color: #718096;
-
-}
-
-
-/* ==========================================
-   Modal
-========================================== */
-
-.modal {
-
-    display: none;
-
-    position: fixed;
-
-    inset: 0;
-
-    width: 100%;
-
-    height: 100%;
-
-    background:
-        rgba(0,0,0,0.5);
-
-    justify-content: center;
-
-    align-items: center;
-
-    z-index: 1000;
-
-}
-
-
-.modal-content {
-
-    background: white;
-
-    padding: 25px;
-
-    border-radius: 8px;
-
-    width: 90%;
-
-    max-width: 480px;
-
-    max-height: 90vh;
-
-    overflow-y: auto;
-
-    box-shadow:
-        0 10px 25px
-        rgba(0,0,0,0.15);
-
-}
-
-
-.modal-title {
-
-    margin-top: 0;
-
-    color:
-        var(--primary-color);
-
-}
-
-
-/* ==========================================
-   Form
-========================================== */
-
-.form-group {
-
-    margin-bottom: 12px;
-
-}
-
-
-.form-group label {
-
-    display: block;
-
-    margin-bottom: 5px;
-
-    font-weight: bold;
-
-    font-size: 14px;
-
-}
-
-
-.form-group input,
-
-.form-group select {
-
-    width: 100%;
-
-    padding: 9px;
-
-    border:
-        1px solid #cbd5e0;
-
-    border-radius: 6px;
-
-    font-size: 14px;
-
-    background: white;
-
-}
-
-
-.form-group input:focus,
-
-.form-group select:focus {
-
-    outline: none;
-
-    border-color:
-        var(--primary-color);
-
-    box-shadow:
-        0 0 0 2px
-        rgba(43,108,176,0.1);
-
-}
-
-
-/* ==========================================
-   連續時間
-========================================== */
-
-.time-preview {
-
-    background:
-        #ebf8ff;
-
-    color:
-        #2c5282;
-
-    border:
-        1px solid #bee3f8;
-
-    padding: 10px;
-
-    border-radius: 6px;
-
-    font-size: 13px;
-
-    margin-top: 8px;
-
-}
-
-
-.time-preview strong {
-
-    color:
-        var(--primary-color);
-
-}
-
-
-/* ==========================================
-   已預約
-========================================== */
-
-.booked-list {
-
-    max-height: 180px;
-
-    overflow-y: auto;
-
-    background:
-        #fff5f5;
-
-    border:
-        1px solid #feb2b2;
-
-    padding: 8px;
-
-    border-radius: 6px;
-
-    display: flex;
-
-    flex-direction: column;
-
-    gap: 5px;
-
-}
-
-
-.booked-item {
-
-    background: white;
-
-    padding: 7px 8px;
-
-    border:
-        1px solid #fee2e2;
-
-    border-radius: 4px;
-
-    font-size: 13px;
-
-}
-
-
-/* ==========================================
-   Buttons
-========================================== */
-
-.modal-buttons {
-
-    display: flex;
-
-    justify-content: flex-end;
-
-    gap: 10px;
-
-    margin-top: 15px;
-
-}
-
-
-.action-btn {
-
-    padding: 9px 16px;
-
-    border: none;
-
-    border-radius: 6px;
-
-    font-weight: bold;
-
-    cursor: pointer;
-
-}
-
-
-.btn-close {
-
-    background:
-        #edf2f7;
-
-    color:
-        #4a5568;
-
-}
-
-
-.btn-reserve {
-
-    background:
-        var(--primary-color);
-
-    color: white;
-
-}
-
-
-.btn-reserve:hover {
-
-    background:
-        var(--primary-dark);
-
-}
-
-
-.btn-purple {
-
-    background:
-        #805ad5;
-
-    color: white;
-
-}
-
-
-.btn-danger {
-
-    background:
-        #e53e3e;
-
-    color: white;
-
-}
-
-
-.btn-success {
-
-    background:
-        #38a169;
-
-    color: white;
-
-}
-
-
-/* ==========================================
-   取消碼
-========================================== */
-
-.cancel-code-box {
-
-    background:
-        #f0fff4;
-
-    border:
-        1px solid #9ae6b4;
-
-    border-radius: 8px;
-
-    padding: 14px;
-
-    text-align: center;
-
-    margin:
-        10px 0 15px;
-
-}
-
-
-.cancel-code {
-
-    font-size: 28px;
-
-    font-weight: bold;
-
-    letter-spacing: 4px;
-
-    color:
-        #276749;
-
-    margin: 8px 0;
-
-}
-
-
-.warning-text {
-
-    font-size: 12px;
-
-    color:
-        #744210;
-
-    background:
-        #fffaf0;
-
-    border:
-        1px solid #fbd38d;
-
-    padding: 8px;
-
-    border-radius: 5px;
-
-}
-
-
-/* ==========================================
-   查詢結果
-========================================== */
-
-.booking-result {
-
-    border:
-        1px solid #e2e8f0;
-
-    border-radius: 8px;
-
-    padding: 12px;
-
-    margin-bottom: 10px;
-
-    background:
-        #f8fafc;
-
-}
-
-
-.booking-result-title {
-
-    font-weight: bold;
-
-    color:
-        var(--primary-color);
-
-    margin-bottom: 8px;
-
-}
-
-
-.booking-result-time {
-
-    font-size: 18px;
-
-    font-weight: bold;
-
-    margin:
-        5px 0;
-
-}
-
-
-.booking-result-info {
-
-    font-size: 13px;
-
-    color:
-        #4a5568;
-
-}
-
-
-/* ==========================================
-   Mobile
-========================================== */
-
-@media(max-width:600px) {
-
-    body {
-
-        padding: 8px;
-
-    }
-
-
-    .container {
-
-        padding: 12px;
-
-    }
-
-
-    h1 {
-
-        font-size: 20px;
-
-    }
-
-
-    .tab-btn {
-
-        font-size: 13px;
-
-        padding: 10px 5px;
-
-    }
-
-
-    .calendar-grid {
-
-        gap: 3px;
-
-    }
-
-
-    .calendar-day {
-
-        min-height: 75px;
-
-        padding: 4px;
-
-    }
-
-
-    .event-item {
-
-        font-size: 9px;
-
-    }
-
-
-    .nav-btn {
-
-        font-size: 12px;
-
-        padding: 5px 8px;
-
-    }
-
-
-    .my-booking-area {
-
-        justify-content: stretch;
-
-    }
-
-
-    .my-booking-btn {
-
-        width: 100%;
-
-    }
-
-
-    .modal-content {
-
-        padding: 18px;
-
-    }
-
-
-    .calendar-header h2 {
-
-        font-size: 15px;
-
-    }
-
-}
-
-</style>
-
-</head>
-
-
-<body>
-
-
-<div class="container">
-
-
-<h1>
-🏢 醫奈所會議室預約系統
-</h1>
-
-
-<!-- ==========================================
-     會議室
-========================================== -->
-
-<div class="room-tabs">
-
-
-<button
-    class="tab-btn active"
-    id="btn-R1-2013"
-    onclick="switchRoom('R1-2013')">
-
-📍 R1-2013 會議室
-
-</button>
-
-
-<button
-    class="tab-btn"
-    id="btn-R1-3013"
-    onclick="switchRoom('R1-3013')">
-
-📍 R1-3013 會議室
-
-</button>
-
-
-</div>
-
-
-<!-- ==========================================
-     我的預約
-========================================== -->
-
-<div class="my-booking-area">
-
-<button
-    class="my-booking-btn"
-    onclick="openMyBookingModal()">
-
-🔍 我的預約 / 取消預約
-
-</button>
-
-</div>
-
-
-<!-- ==========================================
-     月曆
-========================================== -->
-
-<div class="calendar-header">
-
-
-<button
-    class="nav-btn"
-    onclick="moveMonth(-1)">
-
-◀ 上個月
-
-</button>
-
-
-<h2 id="calendar-month-year">
-載入中...
-</h2>
-
-
-<button
-    class="nav-btn"
-    onclick="moveMonth(1)">
-
-下個月 ▶
-
-</button>
-
-
-</div>
-
-
-<div
-    id="calendar-grid"
-    class="calendar-grid">
-
-<div class="loading"
-     style="grid-column:1/-1;">
-
-正在讀取預約資料...
-
-</div>
-
-</div>
-
-
-</div>
-
-
-<!-- ==================================================
-     預約 Modal
-================================================== -->
-
-<div
-    class="modal"
-    id="booking-modal">
-
-
-<div class="modal-content">
-
-
-<h3 class="modal-title">
-
-📅 預約與狀況
-
-</h3>
-
-
-<div class="form-group">
-
-<label>
-預約空間
-</label>
-
-<input
-    type="text"
-    id="modal-room-display"
-    readonly
-    style="background:#edf2f7;">
-
-</div>
-
-
-<div class="form-group">
-
-<label>
-預約日期
-</label>
-
-<input
-    type="text"
-    id="modal-date-display"
-    readonly
-    style="background:#edf2f7;">
-
-</div>
-
-
-<div class="form-group">
-
-<label style="color:#e53e3e;">
-
-⚠️ 該日已預約時段
-
-</label>
-
-
-<div
-    id="modal-booked-list"
-    class="booked-list">
-
-</div>
-
-</div>
-
-
-<hr
-    style="
-        border:0;
-        border-top:1px solid #e2e8f0;
-        margin:15px 0;
-    ">
-
-
-<h4
-    style="
-        margin:0 0 12px;
-        color:#4a5568;
-    ">
-
-➕ 新增預約
-
-</h4>
-
-
-<div class="form-group">
-
-<label>
-開始時間
-</label>
-
-
-<select
-    id="booking-start"
-    onchange="updateEndTimeOptions()">
-
-</select>
-
-</div>
-
-
-<div class="form-group">
-
-<label>
-結束時間
-</label>
-
-
-<select
-    id="booking-end"
-    onchange="updateTimePreview()">
-
-</select>
-
-</div>
-
-
-<div
-    id="time-preview"
-    class="time-preview">
-
-請選擇開始與結束時間。
-
-</div>
-
-
-<div class="form-group">
-
-<label>
-
-預約人姓名
-<span style="color:red;">*</span>
-
-</label>
-
-
-<input
-    type="text"
-    id="user-name"
-    placeholder="請輸入姓名">
-
-</div>
-
-
-<div class="form-group">
-
-<label>
-
-分機號碼
-<span style="color:red;">*</span>
-
-</label>
-
-
-<input
-    type="text"
-    id="user-ext"
-    placeholder="請輸入分機">
-
-</div>
-
-
-<div class="warning-text">
-
-⚠️ 預約成功後會產生「取消碼」。
-<br>
-請務必記下取消碼，之後取消預約會使用到。
-
-</div>
-
-
-<div class="modal-buttons">
-
-
-<button
-    class="action-btn btn-close"
-    onclick="closeModal()">
-
-關閉
-
-</button>
-
-
-<button
-    class="action-btn btn-reserve"
-    id="submit-btn"
-    onclick="submitBooking()">
-
-確認預約登記
-
-</button>
-
-
-</div>
-
-
-</div>
-
-</div>
-
-
-<!-- ==================================================
-     預約成功 Modal
-================================================== -->
-
-<div
-    class="modal"
-    id="success-modal">
-
-
-<div class="modal-content">
-
-
-<h3
-    style="
-        margin-top:0;
-        color:#38a169;
-    ">
-
-✅ 預約成功
-
-</h3>
-
-
-<div id="success-booking-info">
-
-</div>
-
-
-<div class="cancel-code-box">
-
-
-<div>
-您的取消碼
-</div>
-
-
-<div
-    id="success-cancel-code"
-    class="cancel-code">
-
-</div>
-
-
-<div
-    style="
-        font-size:12px;
-        color:#4a5568;
-    ">
-
-請務必記下這組取消碼
-
-</div>
-
-</div>
-
-
-<div class="warning-text">
-
-⚠️ 如果之後需要取消預約，
-請使用這組取消碼查詢。
-
-</div>
-
-
-<div class="modal-buttons">
-
-
-<button
-    class="action-btn btn-success"
-    onclick="closeSuccessModal()">
-
-我已記下
-
-</button>
-
-
-</div>
-
-
-</div>
-
-</div>
-
-
-<!-- ==================================================
-     我的預約 Modal
-================================================== -->
-
-<div
-    class="modal"
-    id="my-booking-modal">
-
-
-<div class="modal-content">
-
-
-<h3
-    class="modal-title">
-
-🔍 我的預約
-
-</h3>
-
-
-<div class="form-group">
-
-<label>
-
-請輸入取消碼
-
-</label>
-
-
-<input
-    type="text"
-    id="cancel-code-input"
-    maxlength="6"
-    placeholder="例如：K7M4P2"
-    style="
-        text-transform:uppercase;
-        letter-spacing:2px;
-        font-weight:bold;
-    ">
-
-</div>
-
-
-<div class="modal-buttons">
-
-
-<button
-    class="action-btn btn-close"
-    onclick="closeMyBookingModal()">
-
-關閉
-
-</button>
-
-
-<button
-    class="action-btn btn-purple"
-    id="find-booking-btn"
-    onclick="findMyBooking()">
-
-查詢預約
-
-</button>
-
-
-</div>
-
-
-<div
-    id="my-booking-result"
-    style="margin-top:15px;">
-
-</div>
-
-
-</div>
-
-</div>
-
-
-<script>
-
-
-/* ==================================================
-   Google Apps Script API
-================================================== */
-
-const API_URL =
-'https://script.google.com/macros/s/AKfycbwz810c8shFDyfSVcpj-KKNK45D3JEveHAZPR1hp6LgKQ3zn7bW4YWb1aRUVJ6cak9C/exec';
+/****************************************************
+ * 醫奈所會議室預約系統
+ * Google Apps Script 後端
+ *
+ * 修正版
+ *
+ * 修正：
+ * 1. Google Sheet 時間欄位 Date 物件造成 1899/12/30
+ * 2. 前端出現 NaN:00
+ * 3. 查詢預約時間格式統一為 HH:mm
+ ****************************************************/
 
 
 /* ==================================================
    基本設定
 ================================================== */
 
-const START_HOUR = 7;
+const BOOKING_SHEET_NAME = '預約資料';
+const CANCEL_LOG_SHEET_NAME = '取消紀錄';
 
-const END_HOUR = 18;
+const BOOKING_HEADERS = [
+  'room',
+  'date',
+  'time',
+  'name',
+  'ext',
+  'bookingId',
+  'cancelCode',
+  '管理操作'
+];
 
-
-let db = {
-
-    "R1-2013": {},
-
-    "R1-3013": {}
-
-};
-
-
-let currentRoom =
-    "R1-2013";
-
-
-let currentDate =
-    new Date();
-
-
-let activeSelectedDateStr =
-    "";
+const CANCEL_LOG_HEADERS = [
+  '取消時間',
+  '會議室',
+  '日期',
+  '時間',
+  '預約人',
+  '分機',
+  'bookingId',
+  '取消方式',
+  '操作者'
+];
 
 
 /* ==================================================
-   日期
+   取得預約工作表
 ================================================== */
 
-function getDateString(
-    year,
-    month,
-    day
-) {
+function getBookingSheet() {
 
-    return (
+  const ss =
+    SpreadsheetApp.getActiveSpreadsheet();
 
-        year +
-
-        '-' +
-
-        String(month + 1)
-            .padStart(2,'0') +
-
-        '-' +
-
-        String(day)
-            .padStart(2,'0')
-
+  let sheet =
+    ss.getSheetByName(
+      BOOKING_SHEET_NAME
     );
 
-}
+  if (!sheet) {
 
+    sheet =
+      ss.insertSheet(
+        BOOKING_SHEET_NAME
+      );
 
-function getTodayString() {
+  }
 
-    const now =
-        new Date();
+  ensureBookingHeaders(sheet);
 
-    return getDateString(
-
-        now.getFullYear(),
-
-        now.getMonth(),
-
-        now.getDate()
-
-    );
-
+  return sheet;
 }
 
 
 /* ==================================================
-   取得所有預約
+   建立 / 修正標題
 ================================================== */
 
-async function loadBookings() {
+function ensureBookingHeaders(sheet) {
 
-    const grid =
-        document.getElementById(
-            'calendar-grid'
-        );
+  const requiredColumns =
+    BOOKING_HEADERS.length;
 
+  if (
+    sheet.getMaxColumns() <
+    requiredColumns
+  ) {
 
-    grid.innerHTML = `
+    sheet.insertColumnsAfter(
+      sheet.getMaxColumns(),
+      requiredColumns -
+      sheet.getMaxColumns()
+    );
 
-        <div
-            class="loading"
-            style="grid-column:1/-1;">
+  }
 
-            正在讀取 Google 預約資料...
+  sheet
+    .getRange(
+      1,
+      1,
+      1,
+      requiredColumns
+    )
+    .setValues([
+      BOOKING_HEADERS
+    ]);
 
-        </div>
+  sheet
+    .getRange(
+      1,
+      1,
+      1,
+      requiredColumns
+    )
+    .setFontWeight('bold')
+    .setBackground('#2b6cb0')
+    .setFontColor('white');
 
-    `;
-
-
-    try {
-
-        const response =
-            await fetch(API_URL);
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                'HTTP ' +
-                response.status
-            );
-
-        }
-
-
-        const data =
-            await response.json();
-
-
-        db = {
-
-            "R1-2013": {},
-
-            "R1-3013": {}
-
-        };
+  sheet.setFrozenRows(1);
 
 
-        data.forEach(item => {
+  /* 管理操作欄設定下拉選單 */
 
-            if (!db[item.room]) {
+  const lastRows =
+    Math.max(
+      sheet.getMaxRows() - 1,
+      1
+    );
 
-                db[item.room] = {};
+  const rule =
+    SpreadsheetApp
+      .newDataValidation()
+      .requireValueInList(
+        ['取消'],
+        true
+      )
+      .setAllowInvalid(true)
+      .build();
 
-            }
+  sheet
+    .getRange(
+      2,
+      8,
+      lastRows,
+      1
+    )
+    .setDataValidation(rule);
 
 
-            if (
-                !db[item.room][item.date]
-            ) {
+  /*
+   * C 欄時間統一使用文字格式
+   *
+   * 避免 Google Sheet 將 12:00
+   * 自動當成 Date 物件。
+   */
 
-                db[item.room][item.date] = {};
+  sheet
+    .getRange(
+      2,
+      3,
+      Math.max(
+        sheet.getMaxRows() - 1,
+        1
+      ),
+      1
+    )
+    .setNumberFormat('@');
 
-            }
+}
 
 
-            db[item.room]
-              [item.date]
-              [item.time] = {
+/* ==================================================
+   取得取消紀錄工作表
+================================================== */
 
-                name:
-                    item.name,
+function getCancelLogSheet() {
 
-                ext:
-                    item.ext
+  const ss =
+    SpreadsheetApp.getActiveSpreadsheet();
 
-            };
+  let sheet =
+    ss.getSheetByName(
+      CANCEL_LOG_SHEET_NAME
+    );
+
+  if (!sheet) {
+
+    sheet =
+      ss.insertSheet(
+        CANCEL_LOG_SHEET_NAME
+      );
+
+  }
+
+  sheet
+    .getRange(
+      1,
+      1,
+      1,
+      CANCEL_LOG_HEADERS.length
+    )
+    .setValues([
+      CANCEL_LOG_HEADERS
+    ]);
+
+  sheet
+    .getRange(
+      1,
+      1,
+      1,
+      CANCEL_LOG_HEADERS.length
+    )
+    .setFontWeight('bold')
+    .setBackground('#718096')
+    .setFontColor('white');
+
+  sheet.setFrozenRows(1);
+
+  return sheet;
+}
+
+
+/* ==================================================
+   網頁 GET
+================================================== */
+
+function doGet() {
+
+  const sheet =
+    getBookingSheet();
+
+  const lastRow =
+    sheet.getLastRow();
+
+  if (lastRow <= 1) {
+
+    return jsonResponse([]);
+
+  }
+
+
+  const values =
+    sheet
+      .getRange(
+        2,
+        1,
+        lastRow - 1,
+        8
+      )
+      .getValues();
+
+
+  const result = [];
+
+
+  values.forEach(row => {
+
+    if (!row[0]) return;
+
+
+    result.push({
+
+      room:
+        String(row[0]),
+
+      date:
+        normalizeDate(row[1]),
+
+      /*
+       * ★ 重要修正
+       *
+       * 原本：
+       * String(row[2])
+       *
+       * 現在：
+       * normalizeTime(row[2])
+       */
+
+      time:
+        normalizeTime(row[2]),
+
+      name:
+        String(row[3]),
+
+      ext:
+        String(row[4]),
+
+      bookingId:
+        String(row[5] || '')
+
+    });
+
+  });
+
+
+  /*
+   * 不回傳 cancelCode
+   *
+   * 避免其他使用者從月曆資料
+   * 取得別人的取消碼。
+   */
+
+  return jsonResponse(
+    result
+  );
+
+}
+
+
+/* ==================================================
+   POST API
+================================================== */
+
+function doPost(e) {
+
+  const lock =
+    LockService.getScriptLock();
+
+
+  try {
+
+    lock.waitLock(15000);
+
+
+    const data =
+      JSON.parse(
+        e.postData.contents
+      );
+
+
+    const action =
+      String(
+        data.action || ''
+      );
+
+
+    switch (action) {
+
+      case 'book':
+
+        return createBooking(data);
+
+
+      case 'find':
+
+        return findBooking(data);
+
+
+      case 'cancel':
+
+        return cancelBooking(data);
+
+
+      default:
+
+        return jsonResponse({
+
+          success: false,
+
+          message:
+            '未知的操作'
 
         });
-
-
-        renderCalendar();
-
-
-        if (
-            activeSelectedDateStr
-        ) {
-
-            refreshModalData();
-
-        }
-
-
-    } catch (error) {
-
-        console.error(error);
-
-
-        grid.innerHTML = `
-
-            <div
-                class="loading"
-                style="
-                    grid-column:1/-1;
-                    color:#e53e3e;
-                ">
-
-                ⚠️ 無法讀取 Google 預約資料
-
-                <br><br>
-
-                請確認 Apps Script
-                部署與權限。
-
-            </div>
-
-        `;
 
     }
 
-}
+
+  } catch (error) {
+
+    console.error(error);
 
 
-/* ==================================================
-   切換會議室
-================================================== */
+    return jsonResponse({
 
-function switchRoom(
-    roomName
-) {
+      success: false,
 
-    currentRoom =
-        roomName;
-
-
-    document
-        .querySelectorAll('.tab-btn')
-        .forEach(btn => {
-
-            btn.classList.remove(
-                'active'
-            );
-
-        });
-
-
-    document
-        .getElementById(
-            `btn-${roomName}`
-        )
-        .classList.add(
-            'active'
-        );
-
-
-    renderCalendar();
-
-}
-
-
-/* ==================================================
-   月份
-================================================== */
-
-function moveMonth(
-    direction
-) {
-
-    currentDate.setMonth(
-
-        currentDate.getMonth()
-        + direction
-
-    );
-
-
-    renderCalendar();
-
-}
-
-
-/* ==================================================
-   月曆
-================================================== */
-
-function renderCalendar() {
-
-    const grid =
-        document.getElementById(
-            'calendar-grid'
-        );
-
-
-    const title =
-        document.getElementById(
-            'calendar-month-year'
-        );
-
-
-    grid.innerHTML = '';
-
-
-    const year =
-        currentDate.getFullYear();
-
-
-    const month =
-        currentDate.getMonth();
-
-
-    title.textContent =
-
-        `${year} 年 ${
-            String(month + 1)
-                .padStart(2,'0')
-        } 月`;
-
-
-    const weekdays =
-        [
-            '日',
-            '一',
-            '二',
-            '三',
-            '四',
-            '五',
-            '六'
-        ];
-
-
-    weekdays.forEach(day => {
-
-        const label =
-            document.createElement(
-                'div'
-            );
-
-
-        label.className =
-            'weekday-label';
-
-
-        label.textContent =
-            day;
-
-
-        grid.appendChild(
-            label
-        );
+      message:
+        '系統錯誤：' +
+        error.toString()
 
     });
 
 
-    const firstDay =
-        new Date(
-            year,
-            month,
-            1
-        ).getDay();
+  } finally {
+
+    try {
+
+      lock.releaseLock();
+
+    } catch (error) {}
+
+  }
+
+}
 
 
-    const totalDays =
-        new Date(
-            year,
-            month + 1,
-            0
-        ).getDate();
+/* ==================================================
+   新增預約
+================================================== */
+
+function createBooking(data) {
+
+  const room =
+    String(data.room || '').trim();
 
 
-    for (
-        let i = 0;
-        i < firstDay;
-        i++
-    ) {
-
-        const empty =
-            document.createElement(
-                'div'
-            );
+  const date =
+    String(data.date || '').trim();
 
 
-        empty.className =
-            'calendar-day empty';
+  const times =
+    Array.isArray(data.times)
+
+      ? data.times.map(
+          x => normalizeTime(x)
+        )
+
+      : [];
 
 
-        grid.appendChild(
-            empty
+  const name =
+    String(data.name || '').trim();
+
+
+  const ext =
+    String(data.ext || '').trim();
+
+
+  if (
+    !room ||
+    !date ||
+    times.length === 0 ||
+    !name ||
+    !ext
+  ) {
+
+    return jsonResponse({
+
+      success: false,
+
+      message:
+        '預約資料不完整'
+
+    });
+
+  }
+
+
+  /*
+   * 去除重複時段
+   */
+
+  const uniqueTimes =
+    [...new Set(times)]
+      .sort();
+
+
+  /*
+   * 確認時間格式
+   */
+
+  const validTimes =
+    uniqueTimes.every(
+      time =>
+        /^\d{2}:00$/.test(time)
+    );
+
+
+  if (!validTimes) {
+
+    return jsonResponse({
+
+      success: false,
+
+      message:
+        '預約時段格式錯誤'
+
+    });
+
+  }
+
+
+  const sheet =
+    getBookingSheet();
+
+
+  const lastRow =
+    sheet.getLastRow();
+
+
+  const values =
+    lastRow > 1
+
+      ? sheet
+          .getRange(
+            2,
+            1,
+            lastRow - 1,
+            8
+          )
+          .getValues()
+
+      : [];
+
+
+  /*
+   * 防止重複預約
+   */
+
+  for (
+    const time of uniqueTimes
+  ) {
+
+    const occupied =
+      values.some(row => {
+
+        return (
+
+          String(row[0]) === room &&
+
+          normalizeDate(row[1]) === date &&
+
+          normalizeTime(row[2]) === time
+
         );
+
+      });
+
+
+    if (occupied) {
+
+      return jsonResponse({
+
+        success: false,
+
+        message:
+          `${time} 已經被預約。請重新選擇連續時段。`
+
+      });
 
     }
 
-
-    const today =
-        getTodayString();
+  }
 
 
-    const roomData =
-        db[currentRoom] || {};
+  /*
+   * 建立唯一預約 ID
+   */
+
+  const bookingId =
+    Utilities.getUuid();
 
 
-    for (
-        let day = 1;
-        day <= totalDays;
-        day++
-    ) {
+  /*
+   * 建立 6 碼取消碼
+   */
 
-        const dateStr =
-            getDateString(
-                year,
-                month,
-                day
-            );
+  const cancelCode =
+    generateCancelCode();
 
 
-        const cell =
-            document.createElement(
-                'div'
-            );
+  /*
+   * 寫入 Google Sheet
+   */
+
+  uniqueTimes.forEach(time => {
+
+    sheet.appendRow([
+
+      room,
+
+      date,
+
+      time,
+
+      name,
+
+      ext,
+
+      bookingId,
+
+      cancelCode,
+
+      ''
+
+    ]);
+
+  });
 
 
-        cell.className =
-            'calendar-day';
+  /*
+   * 回傳成功資訊
+   */
 
+  return jsonResponse({
 
-        if (
-            dateStr === today
-        ) {
+    success: true,
 
-            cell.classList.add(
-                'today'
-            );
+    message:
+      '預約成功',
 
-        }
+    bookingId:
+      bookingId,
 
+    cancelCode:
+      cancelCode,
 
-        const number =
-            document.createElement(
-                'div'
-            );
+    room:
+      room,
 
+    date:
+      date,
 
-        number.className =
-            'day-number';
+    times:
+      uniqueTimes,
 
+    name:
+      name,
 
-        number.textContent =
-            day;
+    ext:
+      ext
 
-
-        cell.appendChild(
-            number
-        );
-
-
-        const events =
-            document.createElement(
-                'div'
-            );
-
-
-        events.className =
-            'event-list';
-
-
-        const dayData =
-            roomData[dateStr] || {};
-
-
-        Object.keys(dayData)
-            .sort()
-            .forEach(timeKey => {
-
-                const item =
-                    dayData[timeKey];
-
-
-                const event =
-                    document.createElement(
-                        'div'
-                    );
-
-
-                event.className =
-                    'event-item';
-
-
-                event.textContent =
-                    `${timeKey} ${item.name}`;
-
-
-                event.title =
-                    `${timeKey} ${item.name} / 分機 ${item.ext}`;
-
-
-                events.appendChild(
-                    event
-                );
-
-            });
-
-
-        cell.appendChild(
-            events
-        );
-
-
-        cell.onclick =
-            () =>
-                openBookingModal(
-                    dateStr
-                );
-
-
-        grid.appendChild(
-            cell
-        );
-
-    }
+  });
 
 }
 
 
 /* ==================================================
-   開啟預約 Modal
+   查詢取消碼
 ================================================== */
 
-function openBookingModal(
-    dateStr
-) {
+function findBooking(data) {
 
-    activeSelectedDateStr =
-        dateStr;
-
-
-    document
-        .getElementById(
-            'modal-room-display'
-        )
-        .value =
-        currentRoom;
+  const cancelCode =
+    String(
+      data.cancelCode || ''
+    )
+      .trim()
+      .toUpperCase();
 
 
-    document
-        .getElementById(
-            'modal-date-display'
-        )
-        .value =
-        dateStr;
+  if (!cancelCode) {
+
+    return jsonResponse({
+
+      success: false,
+
+      message:
+        '請輸入取消碼'
+
+    });
+
+  }
 
 
-    document
-        .getElementById(
-            'user-name'
-        )
-        .value = '';
+  const sheet =
+    getBookingSheet();
 
 
-    document
-        .getElementById(
-            'user-ext'
-        )
-        .value = '';
+  const lastRow =
+    sheet.getLastRow();
 
 
-    refreshModalData();
+  if (lastRow <= 1) {
+
+    return jsonResponse({
+
+      success: false,
+
+      message:
+        '目前沒有預約資料'
+
+    });
+
+  }
 
 
-    document
-        .getElementById(
-            'booking-modal'
-        )
-        .style.display =
-        'flex';
-
-}
-
-
-/* ==================================================
-   取得某日期已預約時段
-================================================== */
-
-function getBookedTimes() {
-
-    const roomData =
-        db[currentRoom] || {};
+  const values =
+    sheet
+      .getRange(
+        2,
+        1,
+        lastRow - 1,
+        8
+      )
+      .getValues();
 
 
-    const dayData =
-        roomData[
-            activeSelectedDateStr
-        ] || {};
+  const bookings = {};
 
 
-    return Object.keys(dayData)
-        .sort();
+  values.forEach(row => {
 
-}
+    const rowCancelCode =
+      String(
+        row[6] || ''
+      )
+        .trim()
+        .toUpperCase();
 
-
-/* ==================================================
-   Modal 資料
-================================================== */
-
-function refreshModalData() {
-
-    const list =
-        document.getElementById(
-            'modal-booked-list'
-        );
-
-
-    list.innerHTML = '';
-
-
-    const roomData =
-        db[currentRoom] || {};
-
-
-    const dayData =
-        roomData[
-            activeSelectedDateStr
-        ] || {};
-
-
-    const booked =
-        Object.keys(dayData)
-            .sort();
-
-
-    /* 已預約 */
 
     if (
-        booked.length === 0
+      rowCancelCode !==
+      cancelCode
     ) {
 
-        list.innerHTML =
-            '<div style="padding:5px;">本日目前尚無任何預約。</div>';
-
-    } else {
-
-        booked.forEach(
-            timeKey => {
-
-                const info =
-                    dayData[timeKey];
-
-
-                const div =
-                    document.createElement(
-                        'div'
-                    );
-
-
-                div.className =
-                    'booked-item';
-
-
-                div.innerHTML = `
-
-                    <strong>
-                        ${timeKey}
-                    </strong>
-
-                    -
-
-                    ${escapeHtml(
-                        info.name
-                    )}
-
-                    （分機：
-                    ${escapeHtml(
-                        info.ext
-                    )}
-                    ）
-
-                `;
-
-
-                list.appendChild(
-                    div
-                );
-
-            }
-        );
+      return;
 
     }
 
 
-    updateStartTimeOptions();
-
-}
-
-
-/* ==================================================
-   開始時間
-================================================== */
-
-function updateStartTimeOptions() {
-
-    const startSelect =
-        document.getElementById(
-            'booking-start'
-        );
+    const bookingId =
+      String(
+        row[5] || ''
+      );
 
 
-    startSelect.innerHTML = '';
+    if (!bookingId) return;
 
 
-    const booked =
-        getBookedTimes();
-
-
-    let count = 0;
-
-
-    for (
-        let hour = START_HOUR;
-        hour < END_HOUR;
-        hour++
+    if (
+      !bookings[bookingId]
     ) {
 
-        const time =
-            `${String(hour).padStart(2,'0')}:00`;
+      bookings[bookingId] = {
 
+        bookingId:
+          bookingId,
 
-        if (
-            booked.includes(time)
-        ) {
+        room:
+          String(row[0]),
 
-            continue;
+        date:
+          normalizeDate(row[1]),
 
-        }
+        name:
+          String(row[3]),
 
+        ext:
+          String(row[4]),
 
-        const option =
-            document.createElement(
-                'option'
-            );
+        times: []
 
-
-        option.value =
-            time;
-
-
-        option.textContent =
-            time;
-
-
-        startSelect.appendChild(
-            option
-        );
-
-
-        count++;
+      };
 
     }
-
-
-    if (count === 0) {
-
-        const option =
-            document.createElement(
-                'option'
-            );
-
-
-        option.value = '';
-
-
-        option.textContent =
-            '本日已無空閒時段';
-
-
-        startSelect.appendChild(
-            option
-        );
-
-    }
-
-
-    updateEndTimeOptions();
-
-}
-
-
-/* ==================================================
-   結束時間
-================================================== */
-
-function updateEndTimeOptions() {
-
-    const startSelect =
-        document.getElementById(
-            'booking-start'
-        );
-
-
-    const endSelect =
-        document.getElementById(
-            'booking-end'
-        );
-
-
-    const start =
-        startSelect.value;
-
-
-    endSelect.innerHTML = '';
-
-
-    if (!start) {
-
-        updateTimePreview();
-
-        return;
-
-    }
-
-
-    const startHour =
-        parseInt(
-            start.substring(0,2),
-            10
-        );
-
-
-    const booked =
-        getBookedTimes();
 
 
     /*
-     * 結束時間只能選到
-     * 第一個被預約時段之前。
+     * ★ 重要修正
+     *
+     * 原本：
+     * String(row[2])
+     *
+     * 現在：
+     * normalizeTime(row[2])
      */
 
-    for (
-        let hour = startHour + 1;
-        hour <= END_HOUR;
-        hour++
-    ) {
+    bookings[bookingId]
+      .times
+      .push(
+        normalizeTime(row[2])
+      );
 
-        const previousHour =
-            hour - 1;
+  });
 
 
-        const previousTime =
-            `${String(previousHour).padStart(2,'0')}:00`;
-
-
-        if (
-            booked.includes(
-                previousTime
-            )
-        ) {
-
-            break;
-
-        }
-
-
-        const option =
-            document.createElement(
-                'option'
-            );
-
-
-        option.value =
-            `${String(hour).padStart(2,'0')}:00`;
-
-
-        option.textContent =
-            `${String(hour).padStart(2,'0')}:00`;
-
-
-        endSelect.appendChild(
-            option
-        );
-
-    }
-
-
-    updateTimePreview();
-
-}
-
-
-/* ==================================================
-   時間預覽
-================================================== */
-
-function updateTimePreview() {
-
-    const start =
-        document
-            .getElementById(
-                'booking-start'
-            )
-            .value;
-
-
-    const end =
-        document
-            .getElementById(
-                'booking-end'
-            )
-            .value;
-
-
-    const preview =
-        document.getElementById(
-            'time-preview'
-        );
-
-
-    if (
-        !start ||
-        !end
-    ) {
-
-        preview.innerHTML =
-            '請選擇開始與結束時間。';
-
-        return;
-
-    }
-
-
-    const startHour =
-        parseInt(
-            start.substring(0,2),
-            10
-        );
-
-
-    const endHour =
-        parseInt(
-            end.substring(0,2),
-            10
-        );
-
-
-    const duration =
-        endHour - startHour;
-
-
-    if (
-        duration <= 0
-    ) {
-
-        preview.innerHTML =
-            '⚠️ 結束時間必須晚於開始時間。';
-
-        return;
-
-    }
-
-
-    preview.innerHTML = `
-
-        本次預約：
-
-        <strong>
-            ${start} ～ ${end}
-        </strong>
-
-        ，共
-
-        <strong>
-            ${duration} 小時
-        </strong>
-
-    `;
-
-}
-
-
-/* ==================================================
-   產生連續時段
-================================================== */
-
-function buildTimeArray(
-    start,
-    end
-) {
-
-    const result = [];
-
-
-    const startHour =
-        parseInt(
-            start.substring(0,2),
-            10
-        );
-
-
-    const endHour =
-        parseInt(
-            end.substring(0,2),
-            10
-        );
-
-
-    for (
-        let hour = startHour;
-        hour < endHour;
-        hour++
-    ) {
-
-        result.push(
-
-            `${String(hour).padStart(2,'0')}:00`
-
-        );
-
-    }
-
-
-    return result;
-
-}
-
-
-/* ==================================================
-   預約
-================================================== */
-
-async function submitBooking() {
-
-    const start =
-        document
-            .getElementById(
-                'booking-start'
-            )
-            .value;
-
-
-    const end =
-        document
-            .getElementById(
-                'booking-end'
-            )
-            .value;
-
-
-    const name =
-        document
-            .getElementById(
-                'user-name'
-            )
-            .value
-            .trim();
-
-
-    const ext =
-        document
-            .getElementById(
-                'user-ext'
-            )
-            .value
-            .trim();
-
-
-    if (
-        !start ||
-        !end
-    ) {
-
-        alert(
-            '請選擇開始與結束時間。'
-        );
-
-        return;
-
-    }
-
-
-    const times =
-        buildTimeArray(
-            start,
-            end
-        );
-
-
-    if (
-        times.length === 0
-    ) {
-
-        alert(
-            '預約時間不正確。'
-        );
-
-        return;
-
-    }
-
-
-    if (
-        !name ||
-        !ext
-    ) {
-
-        alert(
-            '請完整填寫姓名與分機！'
-        );
-
-        return;
-
-    }
-
-
-    const button =
-        document.getElementById(
-            'submit-btn'
-        );
-
-
-    button.disabled = true;
-
-    button.textContent =
-        '預約中...';
-
-
-    try {
-
-        const response =
-            await fetch(
-                API_URL,
-                {
-
-                    method: 'POST',
-
-                    body:
-                        JSON.stringify({
-
-                            action:
-                                'book',
-
-                            room:
-                                currentRoom,
-
-                            date:
-                                activeSelectedDateStr,
-
-                            times:
-                                times,
-
-                            name:
-                                name,
-
-                            ext:
-                                ext
-
-                        })
-
-                }
-            );
-
-
-        const result =
-            await response.json();
-
-
-        if (
-            !result.success
-        ) {
-
-            alert(
-                result.message
-            );
-
-
-            await loadBookings();
-
-
-            refreshModalData();
-
-
-            return;
-
-        }
-
-
-        /*
-         * 關閉預約視窗
-         */
-
-        closeModal();
-
-
-        /*
-         * 顯示成功資訊
-         */
-
-        showBookingSuccess(
-            result
-        );
-
-
-        /*
-         * 重新讀取月曆
-         */
-
-        await loadBookings();
-
-
-    } catch (error) {
-
-        console.error(error);
-
-
-        alert(
-            '⚠️ 預約失敗，請確認網路連線。'
-        );
-
-    } finally {
-
-        button.disabled = false;
-
-        button.textContent =
-            '確認預約登記';
-
-    }
-
-}
-
-
-/* ==================================================
-   顯示預約成功
-================================================== */
-
-function showBookingSuccess(
-    result
-) {
-
-    const info =
-        document.getElementById(
-            'success-booking-info'
-        );
-
-
-    const code =
-        document.getElementById(
-            'success-cancel-code'
-        );
-
-
-    const timeText =
-        result.times.length > 0
-
-            ? `${result.times[0]} ～ ${
-                String(
-                    parseInt(
-                        result.times[
-                            result.times.length - 1
-                        ].substring(0,2),
-                        10
-                    ) + 1
-                ).padStart(2,'0')
-              }:00`
-
-            : '';
-
-
-    info.innerHTML = `
-
-        <div style="
-            line-height:1.8;
-            background:#f8fafc;
-            padding:10px;
-            border-radius:6px;
-        ">
-
-            <strong>
-                ${escapeHtml(result.room)}
-            </strong>
-
-            <br>
-
-            日期：
-            ${escapeHtml(result.date)}
-
-            <br>
-
-            時間：
-            <strong>
-                ${timeText}
-            </strong>
-
-            <br>
-
-            預約人：
-            ${escapeHtml(result.name)}
-
-            <br>
-
-            分機：
-            ${escapeHtml(result.ext)}
-
-        </div>
-
-    `;
-
-
-    code.textContent =
-        result.cancelCode;
-
-
-    document
-        .getElementById(
-            'success-modal'
-        )
-        .style.display =
-        'flex';
-
-}
-
-
-/* ==================================================
-   關閉成功視窗
-================================================== */
-
-function closeSuccessModal() {
-
-    document
-        .getElementById(
-            'success-modal'
-        )
-        .style.display =
-        'none';
-
-}
-
-
-/* ==================================================
-   我的預約
-================================================== */
-
-function openMyBookingModal() {
-
-    document
-        .getElementById(
-            'cancel-code-input'
-        )
-        .value = '';
-
-
-    document
-        .getElementById(
-            'my-booking-result'
-        )
-        .innerHTML = '';
-
-
-    document
-        .getElementById(
-            'my-booking-modal'
-        )
-        .style.display =
-        'flex';
-
-
-    setTimeout(
-        () => {
-
-            document
-                .getElementById(
-                    'cancel-code-input'
-                )
-                .focus();
-
-        },
-        100
+  const result =
+    Object.values(
+      bookings
     );
 
-}
 
+  if (
+    result.length === 0
+  ) {
 
-/* ==================================================
-   關閉我的預約
-================================================== */
+    return jsonResponse({
 
-function closeMyBookingModal() {
+      success: false,
 
-    document
-        .getElementById(
-            'my-booking-modal'
-        )
-        .style.display =
-        'none';
-
-}
-
-
-/* ==================================================
-   查詢我的預約
-================================================== */
-
-async function findMyBooking() {
-
-    const input =
-        document
-            .getElementById(
-                'cancel-code-input'
-            );
-
-
-    const resultBox =
-        document
-            .getElementById(
-                'my-booking-result'
-            );
-
-
-    const button =
-        document
-            .getElementById(
-                'find-booking-btn'
-            );
-
-
-    const cancelCode =
-        input.value
-            .trim()
-            .toUpperCase();
-
-
-    if (
-        !cancelCode
-    ) {
-
-        alert(
-            '請輸入取消碼。'
-        );
-
-        return;
-
-    }
-
-
-    button.disabled = true;
-
-    button.textContent =
-        '查詢中...';
-
-
-    resultBox.innerHTML =
-        '<div class="loading">正在查詢...</div>';
-
-
-    try {
-
-        const response =
-            await fetch(
-                API_URL,
-                {
-
-                    method: 'POST',
-
-                    body:
-                        JSON.stringify({
-
-                            action:
-                                'find',
-
-                            cancelCode:
-                                cancelCode
-
-                        })
-
-                }
-            );
-
-
-        const result =
-            await response.json();
-
-
-        if (
-            !result.success
-        ) {
-
-            resultBox.innerHTML = `
-
-                <div
-                    style="
-                        color:#e53e3e;
-                        background:#fff5f5;
-                        padding:10px;
-                        border-radius:6px;
-                    ">
-
-                    ⚠️
-                    ${escapeHtml(
-                        result.message
-                    )}
-
-                </div>
-
-            `;
-
-            return;
-
-        }
-
-
-        renderMyBookings(
-            result.bookings,
-            cancelCode
-        );
-
-
-    } catch (error) {
-
-        console.error(error);
-
-
-        resultBox.innerHTML = `
-
-            <div style="color:#e53e3e;">
-
-                ⚠️ 查詢失敗，
-                請稍後再試。
-
-            </div>
-
-        `;
-
-    } finally {
-
-        button.disabled = false;
-
-        button.textContent =
-            '查詢預約';
-
-    }
-
-}
-
-
-/* ==================================================
-   顯示查詢結果
-================================================== */
-
-function renderMyBookings(
-    bookings,
-    cancelCode
-) {
-
-    const resultBox =
-        document
-            .getElementById(
-                'my-booking-result'
-            );
-
-
-    resultBox.innerHTML = '';
-
-
-    bookings.forEach(
-        booking => {
-
-            const div =
-                document.createElement(
-                    'div'
-                );
-
-
-            div.className =
-                'booking-result';
-
-
-            const times =
-                booking.times.sort();
-
-
-            const start =
-                times[0];
-
-
-            const last =
-                times[
-                    times.length - 1
-                ];
-
-
-            const lastHour =
-                parseInt(
-                    last.substring(0,2),
-                    10
-                );
-
-
-            const end =
-                `${String(
-                    lastHour + 1
-                ).padStart(2,'0')}:00`;
-
-
-            div.innerHTML = `
-
-                <div
-                    class="booking-result-title">
-
-                    ${escapeHtml(
-                        booking.room
-                    )}
-
-                </div>
-
-
-                <div>
-
-                    日期：
-
-                    <strong>
-                        ${escapeHtml(
-                            booking.date
-                        )}
-                    </strong>
-
-                </div>
-
-
-                <div
-                    class="booking-result-time">
-
-                    ${start}
-                    ～ 
-                    ${end}
-
-                </div>
-
-
-                <div
-                    class="booking-result-info">
-
-                    預約人：
-                    ${escapeHtml(
-                        booking.name
-                    )}
-
-                    <br>
-
-                    分機：
-                    ${escapeHtml(
-                        booking.ext
-                    )}
-
-                </div>
-
-
-                <button
-                    class="action-btn btn-danger"
-                    style="
-                        width:100%;
-                        margin-top:12px;
-                    "
-                    onclick="
-                        cancelMyBooking(
-                            '${booking.bookingId}',
-                            '${cancelCode}'
-                        )
-                    ">
-
-                    🗑️ 取消這筆預約
-
-                </button>
-
-            `;
-
-
-            resultBox.appendChild(
-                div
-            );
-
-        }
-    );
-
-}
-
-
-/* ==================================================
-   使用者取消
-================================================== */
-
-async function cancelMyBooking(
-    bookingId,
-    cancelCode
-) {
-
-    const confirmed =
-        confirm(
-
-            '確定要取消這整筆預約嗎？\n\n' +
-
-            '如果是連續多小時預約，' +
-
-            '所有時段都會一起釋放。'
-
-        );
-
-
-    if (!confirmed) {
-
-        return;
-
-    }
-
-
-    try {
-
-        const response =
-            await fetch(
-                API_URL,
-                {
-
-                    method: 'POST',
-
-                    body:
-                        JSON.stringify({
-
-                            action:
-                                'cancel',
-
-                            bookingId:
-                                bookingId,
-
-                            cancelCode:
-                                cancelCode
-
-                        })
-
-                }
-            );
-
-
-        const result =
-            await response.json();
-
-
-        if (
-            !result.success
-        ) {
-
-            alert(
-                result.message
-            );
-
-            return;
-
-        }
-
-
-        alert(
-            '✅ 預約已成功取消。'
-        );
-
-
-        closeMyBookingModal();
-
-
-        await loadBookings();
-
-
-    } catch (error) {
-
-        console.error(error);
-
-
-        alert(
-            '⚠️ 取消失敗，請稍後再試。'
-        );
-
-    }
-
-}
-
-
-/* ==================================================
-   關閉 Modal
-================================================== */
-
-function closeModal() {
-
-    document
-        .getElementById(
-            'booking-modal'
-        )
-        .style.display =
-        'none';
-
-}
-
-
-/* ==================================================
-   點擊背景關閉
-================================================== */
-
-document
-    .querySelectorAll('.modal')
-    .forEach(modal => {
-
-        modal.addEventListener(
-            'click',
-            function(event) {
-
-                if (
-                    event.target === this
-                ) {
-
-                    this.style.display =
-                        'none';
-
-                }
-
-            }
-        );
+      message:
+        '找不到符合的預約，請確認取消碼。'
 
     });
 
+  }
 
-/* ==================================================
-   防止 XSS
-================================================== */
 
-function escapeHtml(
-    value
-) {
+  result.forEach(booking => {
 
-    return String(value)
-        .replace(
-            /&/g,
-            '&amp;'
-        )
-        .replace(
-            /</g,
-            '&lt;'
-        )
-        .replace(
-            />/g,
-            '&gt;'
-        )
-        .replace(
-            /"/g,
-            '&quot;'
-        )
-        .replace(
-            /'/g,
-            '&#039;'
-        );
+    booking.times.sort();
+
+  });
+
+
+  return jsonResponse({
+
+    success: true,
+
+    bookings:
+      result
+
+  });
 
 }
 
 
 /* ==================================================
-   初始化
+   使用者取消預約
 ================================================== */
 
-loadBookings();
+function cancelBooking(data) {
 
-</script>
+  const bookingId =
+    String(
+      data.bookingId || ''
+    ).trim();
 
-</body>
 
-</html>
+  const cancelCode =
+    String(
+      data.cancelCode || ''
+    )
+      .trim()
+      .toUpperCase();
+
+
+  if (
+    !bookingId ||
+    !cancelCode
+  ) {
+
+    return jsonResponse({
+
+      success: false,
+
+      message:
+        '取消資料不完整'
+
+    });
+
+  }
+
+
+  const sheet =
+    getBookingSheet();
+
+
+  const lastRow =
+    sheet.getLastRow();
+
+
+  if (lastRow <= 1) {
+
+    return jsonResponse({
+
+      success: false,
+
+      message:
+        '找不到預約'
+
+    });
+
+  }
+
+
+  const values =
+    sheet
+      .getRange(
+        2,
+        1,
+        lastRow - 1,
+        8
+      )
+      .getValues();
+
+
+  const rowsToDelete = [];
+
+
+  const bookingInfo = {
+
+    room: '',
+
+    date: '',
+
+    name: '',
+
+    ext: '',
+
+    times: []
+
+  };
+
+
+  values.forEach(
+    (row, index) => {
+
+      const rowBookingId =
+        String(
+          row[5] || ''
+        );
+
+
+      const rowCancelCode =
+        String(
+          row[6] || ''
+        )
+          .trim()
+          .toUpperCase();
+
+
+      if (
+
+        rowBookingId ===
+          bookingId &&
+
+        rowCancelCode ===
+          cancelCode
+
+      ) {
+
+        rowsToDelete.push(
+          index + 2
+        );
+
+
+        bookingInfo.room =
+          String(row[0]);
+
+
+        bookingInfo.date =
+          normalizeDate(row[1]);
+
+
+        bookingInfo.name =
+          String(row[3]);
+
+
+        bookingInfo.ext =
+          String(row[4]);
+
+
+        /*
+         * ★ 時間格式修正
+         */
+
+        bookingInfo.times.push(
+          normalizeTime(row[2])
+        );
+
+      }
+
+    }
+  );
+
+
+  if (
+    rowsToDelete.length === 0
+  ) {
+
+    return jsonResponse({
+
+      success: false,
+
+      message:
+        '取消碼錯誤，無法取消此預約。'
+
+    });
+
+  }
+
+
+  /*
+   * 寫入取消紀錄
+   */
+
+  writeCancelLog({
+
+    room:
+      bookingInfo.room,
+
+    date:
+      bookingInfo.date,
+
+    times:
+      bookingInfo.times,
+
+    name:
+      bookingInfo.name,
+
+    ext:
+      bookingInfo.ext,
+
+    bookingId:
+      bookingId,
+
+    method:
+      '使用者取消',
+
+    operator:
+      bookingInfo.name
+
+  });
+
+
+  /*
+   * 由後往前刪除
+   */
+
+  rowsToDelete
+    .sort(
+      (a, b) => b - a
+    )
+    .forEach(
+      rowNumber => {
+
+        sheet.deleteRow(
+          rowNumber
+        );
+
+      }
+    );
+
+
+  return jsonResponse({
+
+    success: true,
+
+    message:
+      '預約已取消',
+
+    count:
+      rowsToDelete.length
+
+  });
+
+}
+
+
+/* ==================================================
+   管理員直接從 Google Sheet 取消
+================================================== */
+
+function onEdit(e) {
+
+  try {
+
+    if (!e || !e.range) return;
+
+
+    const range =
+      e.range;
+
+
+    const sheet =
+      range.getSheet();
+
+
+    /*
+     * 只處理預約資料工作表
+     */
+
+    if (
+      sheet.getName() !==
+      BOOKING_SHEET_NAME
+    ) {
+
+      return;
+
+    }
+
+
+    /*
+     * 只處理 H 欄
+     */
+
+    if (
+      range.getColumn() !== 8
+    ) {
+
+      return;
+
+    }
+
+
+    /*
+     * 只處理資料列
+     */
+
+    if (
+      range.getRow() <= 1
+    ) {
+
+      return;
+
+    }
+
+
+    const value =
+      String(
+        range.getValue() || ''
+      )
+      .trim();
+
+
+    if (
+      value !== '取消'
+    ) {
+
+      return;
+
+    }
+
+
+    const row =
+      range.getRow();
+
+
+    const bookingId =
+      String(
+        sheet
+          .getRange(
+            row,
+            6
+          )
+          .getValue() || ''
+      )
+      .trim();
+
+
+    if (!bookingId) {
+
+      range.setValue('');
+
+
+      SpreadsheetApp
+        .getActive()
+        .toast(
+          '找不到 bookingId',
+          '取消失敗',
+          5
+        );
+
+
+      return;
+
+    }
+
+
+    /*
+     * 防止多人同時操作
+     */
+
+    const lock =
+      LockService
+        .getScriptLock();
+
+
+    lock.waitLock(15000);
+
+
+    try {
+
+      adminCancelBooking(
+        bookingId
+      );
+
+    } finally {
+
+      try {
+
+        lock.releaseLock();
+
+      } catch (error) {}
+
+    }
+
+
+  } catch (error) {
+
+    console.error(error);
+
+  }
+
+}
+
+
+/* ==================================================
+   管理員取消整筆預約
+================================================== */
+
+function adminCancelBooking(
+  bookingId
+) {
+
+  const sheet =
+    getBookingSheet();
+
+
+  const lastRow =
+    sheet.getLastRow();
+
+
+  if (lastRow <= 1) {
+
+    return;
+
+  }
+
+
+  const values =
+    sheet
+      .getRange(
+        2,
+        1,
+        lastRow - 1,
+        8
+      )
+      .getValues();
+
+
+  const rowsToDelete = [];
+
+
+  const info = {
+
+    room: '',
+
+    date: '',
+
+    name: '',
+
+    ext: '',
+
+    times: []
+
+  };
+
+
+  values.forEach(
+    (row, index) => {
+
+      const rowBookingId =
+        String(
+          row[5] || ''
+        ).trim();
+
+
+      if (
+        rowBookingId !==
+        bookingId
+      ) {
+
+        return;
+
+      }
+
+
+      rowsToDelete.push(
+        index + 2
+      );
+
+
+      info.room =
+        String(row[0]);
+
+
+      info.date =
+        normalizeDate(row[1]);
+
+
+      info.name =
+        String(row[3]);
+
+
+      info.ext =
+        String(row[4]);
+
+
+      /*
+       * ★ 時間格式修正
+       */
+
+      info.times.push(
+        normalizeTime(row[2])
+      );
+
+    }
+  );
+
+
+  if (
+    rowsToDelete.length === 0
+  ) {
+
+    return;
+
+  }
+
+
+  /*
+   * 取得操作者
+   */
+
+  let operator = '';
+
+
+  try {
+
+    operator =
+      Session
+        .getActiveUser()
+        .getEmail();
+
+  } catch (error) {
+
+    operator = '';
+
+  }
+
+
+  if (!operator) {
+
+    operator =
+      'Google Sheet 管理員';
+
+  }
+
+
+  /*
+   * 寫入取消紀錄
+   */
+
+  writeCancelLog({
+
+    room:
+      info.room,
+
+    date:
+      info.date,
+
+    times:
+      info.times,
+
+    name:
+      info.name,
+
+    ext:
+      info.ext,
+
+    bookingId:
+      bookingId,
+
+    method:
+      '管理員取消',
+
+    operator:
+      operator
+
+  });
+
+
+  /*
+   * 後往前刪除
+   */
+
+  rowsToDelete
+    .sort(
+      (a, b) => b - a
+    )
+    .forEach(
+      rowNumber => {
+
+        sheet.deleteRow(
+          rowNumber
+        );
+
+      }
+    );
+
+
+  SpreadsheetApp
+    .getActive()
+    .toast(
+
+      `已取消 ${info.name} 的整筆預約`,
+
+      '完成',
+
+      5
+
+    );
+
+}
+
+
+/* ==================================================
+   寫入取消紀錄
+================================================== */
+
+function writeCancelLog(data) {
+
+  const sheet =
+    getCancelLogSheet();
+
+
+  const times =
+    [...data.times]
+      .map(
+        time => normalizeTime(time)
+      )
+      .sort();
+
+
+  const timeRange =
+    formatTimeRange(
+      times
+    );
+
+
+  sheet.appendRow([
+
+    new Date(),
+
+    data.room,
+
+    data.date,
+
+    timeRange,
+
+    data.name,
+
+    data.ext,
+
+    data.bookingId,
+
+    data.method,
+
+    data.operator
+
+  ]);
+
+}
+
+
+/* ==================================================
+   把多個小時轉成時間區間
+================================================== */
+
+function formatTimeRange(
+  times
+) {
+
+  if (
+    !times ||
+    times.length === 0
+  ) {
+
+    return '';
+
+  }
+
+
+  const sorted =
+    [...times]
+      .map(
+        time => normalizeTime(time)
+      )
+      .sort();
+
+
+  const first =
+    sorted[0];
+
+
+  const last =
+    sorted[
+      sorted.length - 1
+    ];
+
+
+  const hour =
+    parseInt(
+      last.split(':')[0],
+      10
+    );
+
+
+  if (Number.isNaN(hour)) {
+
+    return first;
+
+  }
+
+
+  const endHour =
+    hour + 1;
+
+
+  return (
+    first +
+    '～' +
+    String(endHour)
+      .padStart(2, '0') +
+    ':00'
+  );
+
+}
+
+
+/* ==================================================
+   產生取消碼
+================================================== */
+
+function generateCancelCode() {
+
+  const chars =
+    'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+
+
+  let code = '';
+
+
+  for (
+    let i = 0;
+    i < 6;
+    i++
+  ) {
+
+    code +=
+      chars.charAt(
+        Math.floor(
+          Math.random() *
+          chars.length
+        )
+      );
+
+  }
+
+
+  return code;
+
+}
+
+
+/* ==================================================
+   日期格式
+================================================== */
+
+function normalizeDate(
+  value
+) {
+
+  /*
+   * Google Sheet 日期欄位
+   */
+
+  if (
+    Object.prototype.toString.call(
+      value
+    ) === '[object Date]'
+  ) {
+
+    return Utilities.formatDate(
+
+      value,
+
+      Session.getScriptTimeZone(),
+
+      'yyyy-MM-dd'
+
+    );
+
+  }
+
+
+  /*
+   * 已經是文字
+   */
+
+  const text =
+    String(value || '').trim();
+
+
+  /*
+   * yyyy-MM-dd
+   */
+
+  if (
+    /^\d{4}-\d{2}-\d{2}$/.test(text)
+  ) {
+
+    return text;
+
+  }
+
+
+  /*
+   * yyyy/MM/dd
+   */
+
+  const slashMatch =
+    text.match(
+      /^(\d{4})\/(\d{1,2})\/(\d{1,2})$/
+    );
+
+
+  if (slashMatch) {
+
+    return (
+
+      slashMatch[1] +
+      '-' +
+      String(
+        slashMatch[2]
+      ).padStart(2, '0') +
+      '-' +
+      String(
+        slashMatch[3]
+      ).padStart(2, '0')
+
+    );
+
+  }
+
+
+  return text;
+
+}
+
+
+/* ==================================================
+   ★ 時間格式
+================================================== */
+
+function normalizeTime(
+  value
+) {
+
+  /*
+   * 情況 1：
+   * Google Sheet 儲存格是 Date 物件
+   *
+   * 例如：
+   * Sat Dec 30 1899 12:00:00 GMT+0800
+   *
+   * 轉成：
+   * 12:00
+   */
+
+  if (
+    Object.prototype.toString.call(
+      value
+    ) === '[object Date]'
+  ) {
+
+    return Utilities.formatDate(
+
+      value,
+
+      Session.getScriptTimeZone(),
+
+      'HH:mm'
+
+    );
+
+  }
+
+
+  /*
+   * 情況 2：
+   * 已經是文字
+   */
+
+  const text =
+    String(value || '').trim();
+
+
+  if (!text) {
+
+    return '';
+
+  }
+
+
+  /*
+   * 已經是 HH:mm
+   */
+
+  const simpleMatch =
+    text.match(
+      /^(\d{1,2}):(\d{2})$/
+    );
+
+
+  if (simpleMatch) {
+
+    return (
+
+      String(
+        simpleMatch[1]
+      ).padStart(2, '0') +
+
+      ':' +
+
+      simpleMatch[2]
+
+    );
+
+  }
+
+
+  /*
+   * 例如：
+   *
+   * 12:00:00
+   * 2026/08/20 12:00:00
+   * Sat Dec 30 1899 12:00:00 GMT+0800
+   *
+   * 只取其中的時間部分。
+   */
+
+  const match =
+    text.match(
+      /(\d{1,2}):(\d{2})(?::\d{2})?/
+    );
+
+
+  if (match) {
+
+    return (
+
+      String(
+        match[1]
+      ).padStart(2, '0') +
+
+      ':' +
+
+      match[2]
+
+    );
+
+  }
+
+
+  return text;
+
+}
+
+
+/* ==================================================
+   JSON 回應
+================================================== */
+
+function jsonResponse(
+  data
+) {
+
+  return ContentService
+
+    .createTextOutput(
+      JSON.stringify(data)
+    )
+
+    .setMimeType(
+      ContentService.MimeType.JSON
+    );
+
+}
+
+
+/* ==================================================
+   第一次安裝 / 修復設定
+================================================== */
+
+function setupSystem() {
+
+  const bookingSheet =
+    getBookingSheet();
+
+
+  const logSheet =
+    getCancelLogSheet();
+
+
+  /*
+   * C 欄時間強制設為純文字
+   */
+
+  bookingSheet
+    .getRange(
+      2,
+      3,
+      Math.max(
+        bookingSheet.getMaxRows() - 1,
+        1
+      ),
+      1
+    )
+    .setNumberFormat('@');
+
+
+  /*
+   * 自動調整欄寬
+   */
+
+  bookingSheet.autoResizeColumns(
+    1,
+    8
+  );
+
+
+  logSheet.autoResizeColumns(
+    1,
+    CANCEL_LOG_HEADERS.length
+  );
+
+
+  SpreadsheetApp
+    .getActive()
+    .toast(
+      '會議室預約系統設定完成',
+      '完成',
+      5
+    );
+
+}
